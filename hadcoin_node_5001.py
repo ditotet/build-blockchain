@@ -110,7 +110,7 @@ class Blockchain:
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
-# Creating an adsress for the node on Port 5000
+# Creating an adsress for the node on Port 5001
 node_address = str(uuid4()).replace('-', '')
 
 
@@ -193,7 +193,7 @@ def connect_node():
 
 @app.route('/replace_chain', methods = ['GET'])
 def replace_chain():
-    is_chain_replaced = blockchain.replace_chain(blockchain.chain)
+    is_chain_replaced = blockchain.replace_chain()
 
     if is_chain_replaced:
         response = {
@@ -210,7 +210,7 @@ def replace_chain():
 
 
 
-app.run(host = '0.0.0.0', port = 5000)
+app.run(host = '0.0.0.0', port = 5001)
 
 
 

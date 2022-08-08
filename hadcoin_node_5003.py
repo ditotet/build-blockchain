@@ -110,7 +110,7 @@ class Blockchain:
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
-# Creating an adsress for the node on Port 5000
+# Creating an adsress for the node on Port 5003
 node_address = str(uuid4()).replace('-', '')
 
 
@@ -124,7 +124,7 @@ def mine_block():
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
 
-    blockchain.add_transaction(sender = node_address, receiver = 'Hadelin', amount = 1 )
+    blockchain.add_transaction(sender = node_address, receiver = 'You', amount = 1 )
 
     block = blockchain.create_block(proof, previous_hash)
 
@@ -193,7 +193,7 @@ def connect_node():
 
 @app.route('/replace_chain', methods = ['GET'])
 def replace_chain():
-    is_chain_replaced = blockchain.replace_chain(blockchain.chain)
+    is_chain_replaced = blockchain.replace_chain()
 
     if is_chain_replaced:
         response = {
@@ -210,7 +210,7 @@ def replace_chain():
 
 
 
-app.run(host = '0.0.0.0', port = 5000)
+app.run(host = '0.0.0.0', port = 5003)
 
 
 

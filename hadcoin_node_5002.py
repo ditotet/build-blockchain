@@ -1,6 +1,9 @@
 import datetime
 import hashlib
 import json
+from urllib import response
+
+from numpy import block
 from flask import Flask, jsonify, request
 import requests
 from uuid import uuid4
@@ -107,7 +110,7 @@ class Blockchain:
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
-# Creating an adsress for the node on Port 5000
+# Creating an adsress for the node on Port 5002
 node_address = str(uuid4()).replace('-', '')
 
 
@@ -121,7 +124,7 @@ def mine_block():
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
 
-    blockchain.add_transaction(sender = node_address, receiver = 'Hadelin', amount = 1 )
+    blockchain.add_transaction(sender = node_address, receiver = 'Kirill', amount = 1 )
 
     block = blockchain.create_block(proof, previous_hash)
 
@@ -147,13 +150,67 @@ def get_chain():
 
 @app.route('/is_valid', methods = ['GET'])
 def is_valid():
-    response = {
-        'is_valid': blockchain.is_chain_valid(blockchain.chain)
-    }
+    is_valid = blockchain.is_chain_valid(blockchain.chain)
+
+    if is_valid:
+        response = { 'message': 'The Blockchain is valid' }
+    else:
+        response = { 'message': 'There is a problem. The Blockchain is not valid' }
 
     return jsonify(response), 200
 
-app.run(host = '0.0.0.0', port = 5000)
+@app.route('/add_transaction', methods = ['POST'])
+def add_transaction():
+    json = request.get_json()
+    transaction_keys = ['sender', 'receiver', 'amount']
+
+    if not all (key in json for key in transaction_keys):
+        return 'Some elements of the transaction are missing', 400
+
+    index = blockchain.add_transaction(json['sender'], json['receiver'], json['amount'])
+
+    response = {
+        'message': f'This transaction will be added to Block {index}'
+    }
+
+    return jsonify(response), 201
+
+@app.route('/connect_node', methods = ['POST'])
+def connect_node():
+    json = request.get_json()
+    nodes = json.get('nodes')
+    if nodes is None:
+        return "No node", 400
+    for node in nodes:
+        blockchain.add_node(node)
+
+    response = {
+        'message': 'All the nodes are now connected. The Hadcoin Blockchain now contains the following nodes:',
+        'total_nodes': list(blockchain.nodes)
+    }
+
+    return jsonify(response), 201
+
+@app.route('/replace_chain', methods = ['GET'])
+def replace_chain():
+    is_chain_replaced = blockchain.replace_chain()
+
+    if is_chain_replaced:
+        response = {
+            'message': 'The nodes had different chains so the chain was replaced by the longest one',
+            'new_chain': blockchain.chain
+        }
+    else:
+        response = {
+            'message': 'The chain is the largest one.',
+            'actual_chain': blockchain.chain    
+        }
+
+    return jsonify(response), 200
+
+
+
+app.run(host = '0.0.0.0', port = 5002)
 
 
 
